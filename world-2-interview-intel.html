@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation: Social Work - World 2: Interview Intel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-blue: #0066ff;
+            --neon-purple: #9d00ff;
+            --neon-pink: #ff006e;
+            --neon-orange: #ff6b35;
+            --deep-navy: #0a0e27;
+            --dark-slate: #1a1f3a;
+            --success-green: #00ff9f;
+            --warning-amber: #ffaa00;
+            --danger-red: #ff3366;
+            --text-primary: #e8f4f8;
+            --text-secondary: #8ba3b8;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: linear-gradient(135deg, #0d0a1a 0%, #1a0d28 50%, var(--dark-slate) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(157, 0, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(255, 0, 110, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--neon-purple);
+            top: -150px;
+            right: -150px;
+            animation: floatSlow 18s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 450px;
+            height: 450px;
+            background: var(--neon-pink);
+            bottom: -150px;
+            left: -150px;
+            animation: floatSlow 22s ease-in-out infinite reverse;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, -40px) scale(1.1); }
+        }
+
+        #app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(255, 107, 53, 0.3);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink), var(--neon-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--neon-pink);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .hud {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .hud-item {
+            background: rgba(42, 31, 58, 0.6);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hud-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .hud-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neon-orange);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink));
+            transition: width 0.3s ease;
+        }
+
+        .energy-fill {
+            background: linear-gradient(90deg, var(--success-green), var(--warning-amber));
+        }
+
+        #game-area {
+            background: rgba(13, 10, 26, 0.8);
+            border: 2px solid rgba(255, 107, 53, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            min-height: 500px;
+        }
+
+        .briefing {
+            background: rgba(42, 31, 58, 0.8);
+            border-left: 4px solid var(--neon-pink);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .briefing h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--neon-pink);
+        }
+
+        .briefing p {
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .mission-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .mission-card {
+            background: linear-gradient(135deg, rgba(42, 31, 58, 0.8), rgba(26, 13, 40, 0.9));
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mission-card:hover {
+            border-color: var(--neon-orange);
+            transform: translateY(-5px);
+        }
+
+        .mission-card.completed {
+            border-color: var(--success-green);
+        }
+
+        .mission-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--neon-orange);
+            margin-bottom: 10px;
+        }
+
+        .mission-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .mission-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .mission-status {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-new {
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--neon-orange);
+            border: 1px solid var(--neon-orange);
+        }
+
+        .status-completed {
+            background: rgba(0, 255, 159, 0.2);
+            color: var(--success-green);
+            border: 1px solid var(--success-green);
+        }
+
+        .btn {
+            font-family: 'Orbitron', sans-serif;
+            padding: 12px 30px;
+            border: 2px solid var(--neon-orange);
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--neon-orange);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 107, 53, 0.2);
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-secondary {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .btn-back {
+            border-color: var(--neon-purple);
+            color: var(--neon-purple);
+        }
+
+        .client-profile {
+            background: rgba(42, 31, 58, 0.6);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .client-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 2px solid var(--neon-orange);
+        }
+
+        .client-info h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-orange);
+            margin-bottom: 8px;
+        }
+
+        .dialogue-box {
+            background: rgba(42, 31, 58, 0.9);
+            border: 2px solid rgba(255, 107, 53, 0.4);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .dialogue-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .response-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .response-option {
+            background: rgba(26, 31, 58, 0.6);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .response-option:hover {
+            border-color: var(--neon-orange);
+            transform: translateX(10px);
+        }
+
+        .response-option.correct {
+            border-color: var(--success-green);
+            background: rgba(0, 255, 159, 0.15);
+        }
+
+        .response-option.incorrect {
+            border-color: var(--danger-red);
+            background: rgba(255, 51, 102, 0.15);
+        }
+
+        .response-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--neon-orange);
+            margin-bottom: 8px;
+        }
+
+        .response-text {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .feedback {
+            background: rgba(42, 31, 58, 0.95);
+            border: 2px solid var(--neon-orange);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--success-green);
+        }
+
+        .feedback.warning h3 {
+            color: var(--warning-amber);
+        }
+
+        .feedback p {
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .feedback-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .reflection-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .emotion-indicator {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+
+        .emotion-anxious {
+            background: rgba(255, 170, 0, 0.2);
+            color: var(--warning-amber);
+        }
+
+        .emotion-frustrated {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--danger-red);
+        }
+
+        .emotion-hopeful {
+            background: rgba(0, 255, 159, 0.2);
+            color: var(--success-green);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            #app-container { padding: 10px; }
+            header { padding: 20px 10px; }
+            #game-area { padding: 20px; }
+            .mission-selector { grid-template-columns: 1fr; }
+            .client-profile { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div id="app-container">
+        <header>
+            <h1>World 2: Interview Intel</h1>
+            <p class="subtitle">"Inside the Dialogue Chamber"</p>
+        </header>
+
+        <div class="hud">
+            <div class="hud-item">
+                <div class="hud-label">World Progress</div>
+                <div class="hud-value"><span id="missions-completed">0</span> / 3</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="world-progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">XP Earned</div>
+                <div class="hud-value">+<span id="xp-earned">0</span></div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">Coins Earned</div>
+                <div class="hud-value">🪙 <span id="coins-earned">0</span></div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">Energy</div>
+                <div class="hud-value"><span id="energy-display">100</span>%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill energy-fill" id="energy-bar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-area">
+            <!-- Mission Selection -->
+            <div id="mission-selection">
+                <div class="briefing">
+                    <h2>Welcome to the Dialogue Chamber</h2>
+                    <p>Agent Casefile, you have entered the Interview Intel wing of the Agency. Here, holographic client simulations allow you to practice the art of professional interviewing.</p>
+                    <p>In these missions, you'll develop <strong>rapport-building skills, attending behaviors, empathic responses, and boundary awareness</strong>. Each conversation you have will strengthen your ability to engage meaningfully with clients in real practice.</p>
+                    <p><strong>Your task:</strong> Navigate simulated interviews, choose appropriate responses, demonstrate empathy, and identify what clients are really communicating beyond their words.</p>
+                </div>
+
+                <div class="mission-selector">
+                    <div class="mission-card" data-mission="1">
+                        <div class="mission-number">Mission 1</div>
+                        <h3 class="mission-title">First Contact</h3>
+                        <p class="mission-desc">Choose appropriate opening lines for initial client contact. Establish rapport and set a professional tone from the first moment.</p>
+                        <span class="mission-status status-new">New Mission</span>
+                    </div>
+
+                    <div class="mission-card" data-mission="2">
+                        <div class="mission-number">Mission 2</div>
+                        <h3 class="mission-title">Emotional Echo</h3>
+                        <p class="mission-desc">Select reflective statements that demonstrate accurate empathy. Learn to mirror emotions while maintaining professional boundaries.</p>
+                        <span class="mission-status status-new">New Mission</span>
+                    </div>
+
+                    <div class="mission-card" data-mission="3">
+                        <div class="mission-number">Mission 3</div>
+                        <h3 class="mission-title">Identify the Gap</h3>
+                        <p class="mission-desc">Determine what the client did not say but needs follow-up. Develop skills in reading between the lines and asking meaningful questions.</p>
+                        <span class="mission-status status-new">New Mission</span>
+                    </div>
+                </div>
+
+                <div class="text-center" style="margin-top: 20px;">
+                    <button class="btn btn-back" id="return-to-hq"><span>⬅ Return to Agency HQ</span></button>
+                </div>
+            </div>
+
+            <!-- Mission containers will be populated by JavaScript -->
+            <div id="mission-1" class="hidden"></div>
+            <div id="mission-2" class="hidden"></div>
+            <div id="mission-3" class="hidden"></div>
+        </div>
+    </div>
+
+    <script src="world-2-missions.js"></script>
+</body>
+</html>

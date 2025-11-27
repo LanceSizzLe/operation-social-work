@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation: Social Work - Agency Operations HQ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-blue: #0066ff;
+            --neon-purple: #9d00ff;
+            --neon-green: #00ff9f;
+            --neon-amber: #ffaa00;
+            --deep-navy: #0a0e27;
+            --dark-slate: #1a1f3a;
+            --success-green: #00ff9f;
+            --warning-amber: #ffaa00;
+            --danger-red: #ff3366;
+            --text-primary: #e8f4f8;
+            --text-secondary: #8ba3b8;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: linear-gradient(135deg, var(--deep-navy) 0%, #0d1428 50%, var(--dark-slate) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--neon-cyan);
+            top: -100px;
+            right: -100px;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--neon-purple);
+            bottom: -100px;
+            left: -100px;
+            animation: float 18s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        #app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--neon-cyan);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .hud {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .hud-item {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hud-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .hud-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .hud-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .energy-fill {
+            background: linear-gradient(90deg, var(--success-green), var(--warning-amber));
+        }
+
+        #main-area {
+            background: rgba(10, 14, 39, 0.7);
+            border: 2px solid rgba(0, 243, 255, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
+            min-height: 500px;
+        }
+
+        .world-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .world-card {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.8), rgba(10, 14, 39, 0.9));
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .world-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .world-card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .world-card:hover::before {
+            left: 100%;
+        }
+
+        .world-card.completed {
+            border-color: var(--success-green);
+        }
+
+        .world-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .world-card.locked:hover {
+            transform: none;
+        }
+
+        .world-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            margin-bottom: 10px;
+        }
+
+        .world-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .world-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .world-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .world-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .world-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-completed {
+            background: rgba(0, 255, 159, 0.2);
+            color: var(--success-green);
+            border: 1px solid var(--success-green);
+        }
+
+        .status-in-progress {
+            background: rgba(0, 243, 255, 0.2);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+        }
+
+        .status-locked {
+            background: rgba(139, 163, 184, 0.2);
+            color: var(--text-secondary);
+            border: 1px solid var(--text-secondary);
+        }
+
+        .mission-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            font-family: 'Orbitron', sans-serif;
+            padding: 12px 30px;
+            border: 2px solid var(--neon-cyan);
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--neon-cyan);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(0, 243, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .intro-message {
+            background: rgba(26, 31, 58, 0.8);
+            border-left: 4px solid var(--neon-cyan);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        .intro-message h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            #app-container {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px 10px;
+            }
+
+            #main-area {
+                padding: 20px;
+            }
+
+            .world-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div id="app-container">
+        <header>
+            <h1>Operation: Social Work</h1>
+            <p class="subtitle">Agency Operations HQ</p>
+        </header>
+
+        <div class="hud">
+            <div class="hud-item">
+                <div class="hud-label">Agent</div>
+                <div class="hud-value">Casey Casefile</div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">Total XP</div>
+                <div class="hud-value"><span id="xp-display">0</span> / 8000</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="xp-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">Coins</div>
+                <div class="hud-value">🪙 <span id="coin-display">0</span></div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">Energy</div>
+                <div class="hud-value"><span id="energy-display">100</span>%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill energy-fill" id="energy-bar" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">Worlds Completed</div>
+                <div class="hud-value"><span id="worlds-completed">0</span> / 8</div>
+            </div>
+        </div>
+
+        <div id="main-area">
+            <div class="intro-message">
+                <h2>Welcome to the Agency Operations HQ, Agent Casefile</h2>
+                <p>You have been assigned to complete training across <strong>eight specialized wings</strong> of the Agency. Each world represents a critical competency area in Social Work practice.</p>
+                <p>Complete missions, earn XP and coins, and unlock new worlds as you build professional readiness for your practicum placement.</p>
+                <p><strong>Your progress is automatically saved.</strong> Return anytime to continue your training.</p>
+            </div>
+
+            <div class="world-grid" id="world-grid">
+                <!-- Worlds will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global game state with localStorage persistence
+        const gameState = {
+            xp: 0,
+            coins: 0,
+            energy: 100,
+            worlds: {
+                1: { unlocked: true, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                2: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                3: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                4: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                5: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                6: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                7: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 3 },
+                8: { unlocked: false, completed: false, missionsCompleted: 0, totalMissions: 5 }
+            }
+        };
+
+        // World definitions
+        const worldDefinitions = [
+            {
+                id: 1,
+                title: "Orientation Ops",
+                subtitle: '"First Day at the Agency"',
+                description: "Master the foundations: administration, ethics, POPIA compliance, and professional conduct.",
+                theme: "Admin, Ethics & Professional Conduct",
+                file: "world-1-orientation-ops.html"
+            },
+            {
+                id: 2,
+                title: "Interview Intel",
+                subtitle: '"Inside the Dialogue Chamber"',
+                description: "Develop interviewing skills, rapport building, attending skills, and empathic engagement.",
+                theme: "Interviewing & Case Work",
+                file: "world-2-interview-intel.html"
+            },
+            {
+                id: 3,
+                title: "Network Nexus",
+                subtitle: '"The Collaboration Grid"',
+                description: "Navigate interdisciplinary teamwork, referrals, and community partnerships.",
+                theme: "Interdisciplinary Collaboration",
+                file: "world-3-network-nexus.html"
+            },
+            {
+                id: 4,
+                title: "Stat Squad",
+                subtitle: '"The Legislative Wing"',
+                description: "Master legislation, statutory procedures, and legal decision-making.",
+                theme: "Legislation & Statutory Work",
+                file: "world-4-stat-squad.html"
+            },
+            {
+                id: 5,
+                title: "Wordsmith's Ward",
+                subtitle: '"The Communication Hub"',
+                description: "Perfect report writing, professional communication, and documentation.",
+                theme: "Report Writing & Communication",
+                file: "world-5-wordsmiths-ward.html"
+            },
+            {
+                id: 6,
+                title: "Wellness Watch",
+                subtitle: '"The Balance Room"',
+                description: "Practice supervision engagement, self-care, and managing emotional labour.",
+                theme: "Supervision & Self-Care",
+                file: "world-6-wellness-watch.html"
+            },
+            {
+                id: 7,
+                title: "Transitional Trial",
+                subtitle: '"The Professional Gate"',
+                description: "Prepare for professional identity and workplace readiness.",
+                theme: "Professional Transition",
+                file: "world-7-transitional-trial.html"
+            },
+            {
+                id: 8,
+                title: "The System",
+                subtitle: '"The Final Integration Challenge"',
+                description: "Demonstrate mastery across all competencies in complex, integrated scenarios.",
+                theme: "Integrated Competency Assessment",
+                file: "world-8-the-system.html"
+            }
+        ];
+
+        // Load saved game state
+        function loadGameState() {
+            const saved = localStorage.getItem('operationSocialWorkState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(gameState, parsed);
+            }
+        }
+
+        // Save game state
+        function saveGameState() {
+            localStorage.setItem('operationSocialWorkState', JSON.stringify(gameState));
+        }
+
+        // Update HUD
+        function updateHUD() {
+            document.getElementById('xp-display').textContent = gameState.xp;
+            document.getElementById('xp-bar').style.width = (gameState.xp / 8000 * 100) + '%';
+            document.getElementById('coin-display').textContent = gameState.coins;
+            document.getElementById('energy-display').textContent = gameState.energy;
+            document.getElementById('energy-bar').style.width = gameState.energy + '%';
+            
+            const completedWorlds = Object.values(gameState.worlds).filter(w => w.completed).length;
+            document.getElementById('worlds-completed').textContent = completedWorlds;
+        }
+
+        // Render worlds
+        function renderWorlds() {
+            const grid = document.getElementById('world-grid');
+            grid.innerHTML = '';
+
+            worldDefinitions.forEach(world => {
+                const worldState = gameState.worlds[world.id];
+                const card = document.createElement('div');
+                card.className = 'world-card';
+                
+                if (worldState.completed) {
+                    card.classList.add('completed');
+                } else if (!worldState.unlocked) {
+                    card.classList.add('locked');
+                }
+
+                let statusClass = 'status-locked';
+                let statusText = 'Locked';
+                
+                if (worldState.completed) {
+                    statusClass = 'status-completed';
+                    statusText = 'Completed';
+                } else if (worldState.unlocked) {
+                    statusClass = 'status-in-progress';
+                    statusText = worldState.missionsCompleted > 0 ? 'In Progress' : 'Available';
+                }
+
+                card.innerHTML = `
+                    <div class="world-number">World ${world.id}</div>
+                    <h3 class="world-title">${world.title}</h3>
+                    <p class="world-subtitle">${world.subtitle}</p>
+                    <p class="world-desc">${world.description}</p>
+                    <div class="world-progress">
+                        <span class="world-status ${statusClass}">${statusText}</span>
+                        <span class="mission-count">${worldState.missionsCompleted}/${worldState.totalMissions} Missions</span>
+                    </div>
+                `;
+
+                if (worldState.unlocked) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', () => {
+                        enterWorld(world.id, world.file);
+                    });
+                }
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Enter world
+        function enterWorld(worldId, filename) {
+            // Save current state before navigating
+            saveGameState();
+            // Navigate to world file
+            window.location.href = filename;
+        }
+
+        // Check for unlock conditions
+        function checkUnlocks() {
+            // World 2 unlocks after World 1 completion
+            if (gameState.worlds[1].completed && !gameState.worlds[2].unlocked) {
+                gameState.worlds[2].unlocked = true;
+            }
+            
+            // Each subsequent world unlocks after previous completion
+            for (let i = 2; i <= 7; i++) {
+                if (gameState.worlds[i].completed && !gameState.worlds[i + 1].unlocked) {
+                    gameState.worlds[i + 1].unlocked = true;
+                }
+            }
+            
+            saveGameState();
+        }
+
+        // Initialize
+        function init() {
+            loadGameState();
+            checkUnlocks();
+            updateHUD();
+            renderWorlds();
+        }
+
+        // Make gameState available globally for world pages
+        window.operationSocialWork = {
+            getState: () => gameState,
+            saveState: saveGameState,
+            updateFromWorld: (worldId, data) => {
+                gameState.xp += data.xpEarned || 0;
+                gameState.coins += data.coinsEarned || 0;
+                gameState.energy = Math.max(0, Math.min(100, gameState.energy + (data.energyChange || 0)));
+                
+                if (data.missionCompleted) {
+                    gameState.worlds[worldId].missionsCompleted++;
+                }
+                
+                if (gameState.worlds[worldId].missionsCompleted >= gameState.worlds[worldId].totalMissions) {
+                    gameState.worlds[worldId].completed = true;
+                }
+                
+                checkUnlocks();
+                saveGameState();
+            },
+            returnToHQ: () => {
+                window.location.href = 'agency-hq.html';
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>
