@@ -10,6 +10,27 @@ const worldState = {
     currentMission: null
 };
 
+// Settings for feedback delay (can be toggled)
+let feedbackDelay = 3000; // Default 3 seconds
+let fastMode = false;
+
+// Toggle fast mode
+function toggleFastMode() {
+    fastMode = !fastMode;
+    feedbackDelay = fastMode ? 800 : 3000;
+    const btn = document.getElementById('fast-mode-btn');
+    if (btn) {
+        btn.textContent = fastMode ? '⚡ Fast Mode: ON' : '🐢 Fast Mode: OFF';
+        btn.style.background = fastMode ? 'rgba(0, 255, 159, 0.2)' : 'rgba(255, 107, 53, 0.1)';
+    }
+}
+
+// Skip current feedback and move to next
+let skipFeedback = false;
+function skipToNext() {
+    skipFeedback = true;
+}
+
 // Get parent game state if available
 const parentState = window.opener && window.opener.operationSocialWork ? 
     window.opener.operationSocialWork.getState() : null;
@@ -61,6 +82,24 @@ function showMission(num) {
     if (num === '1') initMission1();
     if (num === '2') initMission2();
     if (num === '3') initMission3();
+}
+
+// Cancel mission and return
+function cancelMission() {
+    if (confirm('Are you sure you want to cancel this mission? Progress will not be saved.')) {
+        // Reset mission counters
+        if (worldState.currentMission === 1) {
+            m1Current = 0;
+            m1Score = 0;
+        } else if (worldState.currentMission === 2) {
+            m2Current = 0;
+            m2Score = 0;
+        } else if (worldState.currentMission === 3) {
+            m3Current = 0;
+            m3Score = 0;
+        }
+        returnToMissionSelect();
+    }
 }
 
 function returnToMissionSelect() {
@@ -189,17 +228,23 @@ function initMission1() {
             <h2>${mission1Data.title}</h2>
             <p>${mission1Data.brief}</p>
         </div>
-        <div class="text-center">
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
             <button class="btn" id="start-m1"><span>Begin Simulation</span></button>
+            <button class="btn btn-secondary" id="cancel-m1"><span>✖ Cancel Mission</span></button>
         </div>
         <div id="m1-game" class="hidden"></div>
     `;
     
     document.getElementById('start-m1').addEventListener('click', () => {
         document.getElementById('m1-game').classList.remove('hidden');
-        document.getElementById('start-m1').classList.add('hidden');
+        document.getElementById('start-m1').parentElement.innerHTML = `
+            <button class="btn btn-secondary" id="fast-mode-btn" onclick="toggleFastMode()">🐢 Fast Mode: OFF</button>
+            <button class="btn btn-secondary" onclick="cancelMission()">✖ Cancel Mission</button>
+        `;
         runMission1();
     });
+    
+    document.getElementById('cancel-m1').addEventListener('click', cancelMission);
 }
 
 let m1Current = 0, m1Score = 0;
@@ -241,6 +286,20 @@ function runMission1() {
 
 function selectM1(opt, el) {
     document.querySelectorAll('.response-option').forEach(e => e.style.pointerEvents = 'none');
+    
+    // Add skip button
+    const container = document.getElementById('m1-game');
+    let skipBtn = document.getElementById('skip-btn');
+    if (!skipBtn) {
+        skipBtn = document.createElement('button');
+        skipBtn.id = 'skip-btn';
+        skipBtn.className = 'btn btn-secondary';
+        skipBtn.innerHTML = '<span>⏩ Skip to Next</span>';
+        skipBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 1000;';
+        skipBtn.onclick = skipToNext;
+        document.body.appendChild(skipBtn);
+    }
+    
     setTimeout(() => {
         el.classList.add(opt.correct ? 'correct' : 'incorrect');
         if (opt.correct) { m1Score++; addXP(30); addCoins(12); }
@@ -249,9 +308,27 @@ function selectM1(opt, el) {
         const fb = document.createElement('div');
         fb.className = 'feedback' + (opt.correct ? '' : ' warning');
         fb.innerHTML = `<h3>${opt.correct ? '✓ Excellent' : '✗ Reconsider'}</h3><p>${opt.feedback}</p>`;
-        document.getElementById('m1-game').appendChild(fb);
+        container.appendChild(fb);
         
-        setTimeout(() => { m1Current++; runMission1(); }, 3000);
+        const nextScenario = () => {
+            skipFeedback = false;
+            if (skipBtn) skipBtn.remove();
+            m1Current++;
+            runMission1();
+        };
+        
+        // Check for skip or wait for delay
+        const checkSkip = setInterval(() => {
+            if (skipFeedback) {
+                clearInterval(checkSkip);
+                nextScenario();
+            }
+        }, 100);
+        
+        setTimeout(() => {
+            clearInterval(checkSkip);
+            if (!skipFeedback) nextScenario();
+        }, feedbackDelay);
     }, 500);
 }
 
@@ -285,17 +362,23 @@ function initMission2() {
             <h2>${mission2Data.title}</h2>
             <p>${mission2Data.brief}</p>
         </div>
-        <div class="text-center">
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
             <button class="btn" id="start-m2"><span>Begin Simulation</span></button>
+            <button class="btn btn-secondary" id="cancel-m2"><span>✖ Cancel Mission</span></button>
         </div>
         <div id="m2-game" class="hidden"></div>
     `;
     
     document.getElementById('start-m2').addEventListener('click', () => {
         document.getElementById('m2-game').classList.remove('hidden');
-        document.getElementById('start-m2').classList.add('hidden');
+        document.getElementById('start-m2').parentElement.innerHTML = `
+            <button class="btn btn-secondary" id="fast-mode-btn" onclick="toggleFastMode()">🐢 Fast Mode: OFF</button>
+            <button class="btn btn-secondary" onclick="cancelMission()">✖ Cancel Mission</button>
+        `;
         runMission2();
     });
+    
+    document.getElementById('cancel-m2').addEventListener('click', cancelMission);
 }
 
 let m2Current = 0, m2Score = 0;
@@ -332,6 +415,20 @@ function runMission2() {
 
 function selectM2(opt, el) {
     document.querySelectorAll('.response-option').forEach(e => e.style.pointerEvents = 'none');
+    
+    // Add skip button
+    const container = document.getElementById('m2-game');
+    let skipBtn = document.getElementById('skip-btn');
+    if (!skipBtn) {
+        skipBtn = document.createElement('button');
+        skipBtn.id = 'skip-btn';
+        skipBtn.className = 'btn btn-secondary';
+        skipBtn.innerHTML = '<span>⏩ Skip to Next</span>';
+        skipBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 1000;';
+        skipBtn.onclick = skipToNext;
+        document.body.appendChild(skipBtn);
+    }
+    
     setTimeout(() => {
         el.classList.add(opt.correct ? 'correct' : 'incorrect');
         if (opt.correct) { m2Score++; addXP(35); addCoins(15); }
@@ -340,9 +437,26 @@ function selectM2(opt, el) {
         const fb = document.createElement('div');
         fb.className = 'feedback' + (opt.correct ? '' : ' warning');
         fb.innerHTML = `<h3>${opt.correct ? '✓ Excellent Empathy' : '✗ Missed Emotion'}</h3><p>${opt.feedback}</p>`;
-        document.getElementById('m2-game').appendChild(fb);
+        container.appendChild(fb);
         
-        setTimeout(() => { m2Current++; runMission2(); }, 3000);
+        const nextScenario = () => {
+            skipFeedback = false;
+            if (skipBtn) skipBtn.remove();
+            m2Current++;
+            runMission2();
+        };
+        
+        const checkSkip = setInterval(() => {
+            if (skipFeedback) {
+                clearInterval(checkSkip);
+                nextScenario();
+            }
+        }, 100);
+        
+        setTimeout(() => {
+            clearInterval(checkSkip);
+            if (!skipFeedback) nextScenario();
+        }, feedbackDelay);
     }, 500);
 }
 
@@ -376,17 +490,23 @@ function initMission3() {
             <h2>${mission3Data.title}</h2>
             <p>${mission3Data.brief}</p>
         </div>
-        <div class="text-center">
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
             <button class="btn" id="start-m3"><span>Begin Simulation</span></button>
+            <button class="btn btn-secondary" id="cancel-m3"><span>✖ Cancel Mission</span></button>
         </div>
         <div id="m3-game" class="hidden"></div>
     `;
     
     document.getElementById('start-m3').addEventListener('click', () => {
         document.getElementById('m3-game').classList.remove('hidden');
-        document.getElementById('start-m3').classList.add('hidden');
+        document.getElementById('start-m3').parentElement.innerHTML = `
+            <button class="btn btn-secondary" id="fast-mode-btn" onclick="toggleFastMode()">🐢 Fast Mode: OFF</button>
+            <button class="btn btn-secondary" onclick="cancelMission()">✖ Cancel Mission</button>
+        `;
         runMission3();
     });
+    
+    document.getElementById('cancel-m3').addEventListener('click', cancelMission);
 }
 
 let m3Current = 0, m3Score = 0;
@@ -426,6 +546,20 @@ function runMission3() {
 
 function selectM3(gap, el) {
     document.querySelectorAll('.response-option').forEach(e => e.style.pointerEvents = 'none');
+    
+    // Add skip button
+    const container = document.getElementById('m3-game');
+    let skipBtn = document.getElementById('skip-btn');
+    if (!skipBtn) {
+        skipBtn = document.createElement('button');
+        skipBtn.id = 'skip-btn';
+        skipBtn.className = 'btn btn-secondary';
+        skipBtn.innerHTML = '<span>⏩ Skip to Next</span>';
+        skipBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 1000;';
+        skipBtn.onclick = skipToNext;
+        document.body.appendChild(skipBtn);
+    }
+    
     setTimeout(() => {
         el.classList.add(gap.correct ? 'correct' : 'incorrect');
         if (gap.correct) { m3Score++; addXP(40); addCoins(18); }
@@ -434,9 +568,26 @@ function selectM3(gap, el) {
         const fb = document.createElement('div');
         fb.className = 'feedback' + (gap.correct ? '' : ' warning');
         fb.innerHTML = `<h3>${gap.correct ? '✓ Excellent Insight' : '✗ Missed Gap'}</h3><p>${gap.feedback}</p>`;
-        document.getElementById('m3-game').appendChild(fb);
+        container.appendChild(fb);
         
-        setTimeout(() => { m3Current++; runMission3(); }, 3000);
+        const nextScenario = () => {
+            skipFeedback = false;
+            if (skipBtn) skipBtn.remove();
+            m3Current++;
+            runMission3();
+        };
+        
+        const checkSkip = setInterval(() => {
+            if (skipFeedback) {
+                clearInterval(checkSkip);
+                nextScenario();
+            }
+        }, 100);
+        
+        setTimeout(() => {
+            clearInterval(checkSkip);
+            if (!skipFeedback) nextScenario();
+        }, feedbackDelay);
     }, 500);
 }
 
@@ -476,3 +627,26 @@ function completeMission(num) {
 
 // Initialize
 updateHUD();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Spacebar or Enter to skip feedback
+    if (e.code === 'Space' || e.code === 'Enter') {
+        const skipBtn = document.getElementById('skip-btn');
+        if (skipBtn && !skipFeedback) {
+            e.preventDefault();
+            skipToNext();
+        }
+    }
+    
+    // F key to toggle fast mode
+    if (e.code === 'KeyF') {
+        const fastBtn = document.getElementById('fast-mode-btn');
+        if (fastBtn) toggleFastMode();
+    }
+    
+    // Escape to cancel mission
+    if (e.code === 'Escape' && worldState.currentMission) {
+        cancelMission();
+    }
+});

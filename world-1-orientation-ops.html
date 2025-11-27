@@ -705,7 +705,11 @@
 
         document.getElementById('start-mission-1').addEventListener('click', function() {
             document.getElementById('mission-1-game').classList.remove('hidden');
-            this.classList.add('hidden');
+            // Replace start button with cancel button
+            const buttonContainer = this.parentElement;
+            buttonContainer.innerHTML = `
+                <button class="btn btn-secondary" onclick="cancelMission()"><span>✖ Cancel Mission</span></button>
+            `;
             startMission1();
         });
 
@@ -986,7 +990,11 @@
 
         document.getElementById('start-mission-2').addEventListener('click', function() {
             document.getElementById('mission-2-game').classList.remove('hidden');
-            this.classList.add('hidden');
+            // Replace start button with cancel button
+            const buttonContainer = this.parentElement;
+            buttonContainer.innerHTML = `
+                <button class="btn btn-secondary" onclick="cancelMission()"><span>✖ Cancel Mission</span></button>
+            `;
             startMission2();
         });
 
@@ -1167,7 +1175,12 @@
         // MISSION 3: POPIA PANIC
         document.getElementById('start-mission-3').addEventListener('click', function() {
             document.getElementById('mission-3-game').classList.remove('hidden');
-            this.classList.add('hidden');
+            // Replace start button with control buttons
+            const buttonContainer = this.parentElement;
+            buttonContainer.innerHTML = `
+                <button class="btn btn-secondary" id="fast-mode-btn" onclick="toggleFastMode()"><span>🐢 Fast Mode: OFF</span></button>
+                <button class="btn btn-secondary" onclick="cancelMission()"><span>✖ Cancel Mission</span></button>
+            `;
             startMission3();
         });
 
@@ -1251,10 +1264,37 @@
                 `;
                 container.appendChild(feedback);
 
-                setTimeout(() => {
+                // Add skip button
+                let skipBtn = document.getElementById('skip-btn');
+                if (!skipBtn) {
+                    skipBtn = document.createElement('button');
+                    skipBtn.id = 'skip-btn';
+                    skipBtn.className = 'btn btn-secondary';
+                    skipBtn.innerHTML = '<span>⏩ Skip to Next</span>';
+                    skipBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 1000;';
+                    skipBtn.onclick = skipToNext;
+                    document.body.appendChild(skipBtn);
+                }
+
+                const nextQuestion = () => {
+                    skipFeedback = false;
+                    if (skipBtn) skipBtn.remove();
                     currentQuestion++;
                     showQuestion();
-                }, 2500);
+                };
+
+                // Check for skip or wait for delay
+                const checkSkip = setInterval(() => {
+                    if (skipFeedback) {
+                        clearInterval(checkSkip);
+                        nextQuestion();
+                    }
+                }, 100);
+
+                setTimeout(() => {
+                    clearInterval(checkSkip);
+                    if (!skipFeedback) nextQuestion();
+                }, feedbackDelay);
             }
 
             function endMission3(correctCount, incorrectCount) {
@@ -1301,6 +1341,63 @@
 
             showQuestion();
         }
+
+        // Speed control settings
+        let feedbackDelay = 2500; // Default 2.5 seconds for Mission 3
+        let fastMode = false;
+        let skipFeedback = false;
+
+        // Toggle fast mode
+        function toggleFastMode() {
+            fastMode = !fastMode;
+            feedbackDelay = fastMode ? 800 : 2500;
+            const btn = document.getElementById('fast-mode-btn');
+            if (btn) {
+                btn.textContent = fastMode ? '⚡ Fast Mode: ON' : '🐢 Fast Mode: OFF';
+                btn.style.background = fastMode ? 'rgba(0, 255, 159, 0.2)' : 'rgba(255, 107, 53, 0.1)';
+            }
+        }
+
+        // Skip current feedback
+        function skipToNext() {
+            skipFeedback = true;
+        }
+
+        // Cancel mission
+        function cancelMission() {
+            if (confirm('Are you sure you want to cancel this mission? Progress will not be saved.')) {
+                location.reload(); // Reload to reset everything
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Spacebar or Enter to skip feedback
+            if (e.code === 'Space' || e.code === 'Enter') {
+                const skipBtn = document.getElementById('skip-btn');
+                if (skipBtn && !skipFeedback) {
+                    e.preventDefault();
+                    skipToNext();
+                }
+            }
+            
+            // F key to toggle fast mode
+            if (e.code === 'KeyF') {
+                const fastBtn = document.getElementById('fast-mode-btn');
+                if (fastBtn) toggleFastMode();
+            }
+            
+            // Escape to cancel mission
+            if (e.code === 'Escape') {
+                // Check if any mission is active
+                const m1Active = !document.getElementById('mission-1-game').classList.contains('hidden');
+                const m2Active = !document.getElementById('mission-2-game').classList.contains('hidden');
+                const m3Active = !document.getElementById('mission-3-game').classList.contains('hidden');
+                if (m1Active || m2Active || m3Active) {
+                    cancelMission();
+                }
+            }
+        });
 
         // Initialize
         updateHUD();
